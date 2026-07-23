@@ -36,6 +36,7 @@ export default function GSTInvoicePage() {
   const [customerAddress, setCustomerAddress] = useState("");
   const [customerGst, setCustomerGst] = useState("");
   const [notes, setNotes] = useState("");
+  const [extraDiscount, setExtraDiscount] = useState<number>(0);
   const [storeSettings, setStoreSettings] = useState<any>(undefined);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -63,6 +64,7 @@ export default function GSTInvoicePage() {
         paymentMode,
         items,
         subTotal: totals.grandTotal,
+        discount: totalDiscount,
         taxableAmount: totals.taxableAmount,
         cgst,
         sgst,
@@ -126,7 +128,7 @@ export default function GSTInvoicePage() {
 
   // Calculations based on MRP (GST Inclusive)
   const calculateItemTotals = (item: any) => {
-    const discountedMrp = (item.mrp || 0) - (item.discount || 0);
+    const discountedMrp = Math.max(0, (item.mrp || 0) - (item.discount || 0));
     const taxableValue = discountedMrp / (1 + ((item.gst || 0) / 100));
     const totalGstForItem = discountedMrp - taxableValue;
     const itemTotal = discountedMrp * (item.qty || 1);
@@ -142,10 +144,13 @@ export default function GSTInvoicePage() {
     };
   }, { taxableAmount: 0, totalGst: 0, grandTotal: 0 });
 
+  const totalItemDiscount = items.reduce((sum, item) => sum + ((item.discount || 0) * (item.qty || 1)), 0);
+  const totalDiscount = totalItemDiscount + (extraDiscount || 0);
+
   const cgst = totals.totalGst / 2;
   const sgst = totals.totalGst / 2;
   
-  const rawTotal = totals.grandTotal;
+  const rawTotal = Math.max(0, totals.grandTotal - (extraDiscount || 0));
   const grandTotal = Math.round(rawTotal);
   const roundOff = grandTotal - rawTotal;
 
@@ -188,18 +193,19 @@ export default function GSTInvoicePage() {
           <Button variant="outline" onClick={() => setShowPreview(true)} className="rounded-xl border-primary text-primary hover:bg-primary/5">
             <Eye className="mr-2 h-4 w-4" /> Preview Invoice
           </Button>
-          <Button onClick={handleSaveAndDownload} disabled={isSaving} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90">
-            <FileDown className="mr-2 h-4 w-4" /> {isSaving ? "Saving..." : "Save & Generate PDF"}
+          <Button onClick={handleSaveAndDownload} disabled={isSaving} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 px-6">
+            <FileDown className="mr-2 h-4 w-4" />
+            {isSaving ? "Saving..." : "Save & Download PDF"}
           </Button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - Customer & Invoice Details */}
-        <div className="lg:col-span-1 space-y-6">
+        {/* Left Column - Invoice Settings & Customer Details */}
+        <div className="space-y-6">
           <Card className="glass-panel rounded-2xl">
             <CardHeader className="pb-3 border-b border-border/50">
-              <CardTitle className="text-lg">Invoice Details</CardTitle>
+              <CardTitle className="text-lg">Invoice Details & Extra Discount</CardTitle>
             </CardHeader>
             <CardContent className="pt-4 space-y-4">
               <div className="space-y-2">
@@ -223,6 +229,17 @@ export default function GSTInvoicePage() {
                     <SelectItem value="bank">Bank Transfer</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-destructive font-bold">Extra Flat Discount (₹)</Label>
+                <Input 
+                  type="number" 
+                  min="0"
+                  value={extraDiscount || ""} 
+                  onChange={(e) => setExtraDiscount(parseFloat(e.target.value) || 0)} 
+                  placeholder="e.g. 500" 
+                  className="bg-destructive/10 border-destructive/30 text-destructive font-bold text-base" 
+                />
               </div>
               <div className="space-y-2">
                 <Label>Note / Remarks (Optional)</Label>
@@ -360,6 +377,12 @@ export default function GSTInvoicePage() {
             <CardContent className="p-6">
               <div className="flex flex-col sm:flex-row justify-end">
                 <div className="w-full sm:w-1/2 space-y-3">
+                  {totalDiscount > 0 && (
+                    <div className="flex justify-between text-sm text-destructive font-semibold">
+                      <span>Total Discount Given</span>
+                      <span>- ₹{totalDiscount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Taxable Amount</span>
                     <span className="font-medium">₹{totals.taxableAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>

@@ -28,6 +28,7 @@ export default function ChalanPage() {
     getStoreSettings().then(setStoreSettings);
   }, []);
 
+  const [extraDiscount, setExtraDiscount] = useState<number>(0);
   const [items, setItems] = useState<Array<{
     id: number;
     name: string;
@@ -39,8 +40,9 @@ export default function ChalanPage() {
     inventoryItemId?: string;
     qty: number;
     rate: number;
+    discount: number;
     amount: number;
-  }>>([{ id: 1, name: "", qty: 1, rate: 0, amount: 0 }]);
+  }>>([{ id: 1, name: "", qty: 1, rate: 0, discount: 0, amount: 0 }]);
 
   const [showPreview, setShowPreview] = useState(false);
 
@@ -63,7 +65,7 @@ export default function ChalanPage() {
   };
 
   const addItem = () => {
-    setItems([...items, { id: Date.now(), name: "", qty: 1, rate: 0, amount: 0 }]);
+    setItems([...items, { id: Date.now(), name: "", qty: 1, rate: 0, discount: 0, amount: 0 }]);
   };
 
   const removeItem = (id: number) => {
@@ -92,14 +94,18 @@ export default function ChalanPage() {
           storage: selected.storage,
           imei1: selected.imei1,
           serialNumber: selected.serialNumber,
-          rate: selected.mrp || 0
+          rate: selected.mrp || 0,
+          discount: 0
         };
       }
       return item;
     }));
   };
 
-  const grandTotal = items.reduce((sum, item) => sum + ((item.qty || 1) * (item.rate || 0)), 0);
+  const subTotal = items.reduce((sum, item) => sum + ((item.qty || 1) * (item.rate || 0)), 0);
+  const itemDiscounts = items.reduce((sum, item) => sum + ((item.qty || 1) * (item.discount || 0)), 0);
+  const totalDiscount = itemDiscounts + (extraDiscount || 0);
+  const grandTotal = Math.max(0, Math.round(subTotal - totalDiscount));
 
   const invoiceData: InvoiceData = {
     invoiceNumber: chalanNumber,
@@ -117,10 +123,10 @@ export default function ChalanPage() {
       serialNumber: item.serialNumber,
       qty: item.qty || 1,
       mrp: item.rate || 0,
-      discount: 0,
+      discount: item.discount || 0,
       gst: 0
     })),
-    subTotal: grandTotal,
+    subTotal,
     taxableAmount: grandTotal,
     cgst: 0,
     sgst: 0,
@@ -198,16 +204,17 @@ export default function ChalanPage() {
                 <Table>
                   <TableHeader className="bg-black/5 dark:bg-white/5">
                     <TableRow>
-                      <TableHead className="w-[50%]">Particulars (Product / IMEI)</TableHead>
-                      <TableHead className="w-[100px] text-center">Qty</TableHead>
-                      <TableHead className="w-[150px] text-right">Rate</TableHead>
-                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead className="w-[45%]">Particulars (Product / IMEI)</TableHead>
+                      <TableHead className="w-[80px] text-center">Qty</TableHead>
+                      <TableHead className="w-[120px] text-right">Rate (₹)</TableHead>
+                      <TableHead className="w-[120px] text-right">Discount (₹)</TableHead>
+                      <TableHead className="text-right">Amount (₹)</TableHead>
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {items.map((item) => {
-                      const itemTotal = (item.qty || 1) * (item.rate || 0);
+                      const itemTotal = ((item.qty || 1) * ((item.rate || 0) - (item.discount || 0)));
                       return (
                       <TableRow key={item.id} className="border-b border-border/50">
                         <TableCell className="p-2">
@@ -237,8 +244,18 @@ export default function ChalanPage() {
                             className="h-9 text-right border-none bg-black/5 dark:bg-white/5" 
                           />
                         </TableCell>
+                        <TableCell className="p-2">
+                          <Input 
+                            type="number" 
+                            min="0"
+                            value={item.discount || ""}
+                            onChange={(e) => updateItem(item.id, 'discount', parseFloat(e.target.value) || 0)}
+                            className="h-9 text-right border-none bg-black/5 dark:bg-white/5 font-semibold text-destructive" 
+                            placeholder="0"
+                          />
+                        </TableCell>
                         <TableCell className="p-2 text-right font-medium align-middle">
-                          ₹{(itemTotal).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                          ₹{Math.max(0, itemTotal).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                         </TableCell>
                         <TableCell className="p-2 text-center align-middle">
                           <Button variant="ghost" size="icon" onClick={() => removeItem(item.id)} className="h-8 w-8 text-destructive hover:bg-destructive/10">
@@ -257,7 +274,7 @@ export default function ChalanPage() {
         <div className="space-y-6">
           <Card className="glass-panel rounded-2xl border-none shadow-sm">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg">Invoice Settings</CardTitle>
+              <CardTitle className="text-lg">Invoice Settings & Extra Discount</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -268,13 +285,34 @@ export default function ChalanPage() {
                 <Label>Date</Label>
                 <Input type="date" value={chalanDate} onChange={(e) => setChalanDate(e.target.value)} className="bg-black/5 dark:bg-white/5 border-none" />
               </div>
+              <div className="space-y-2">
+                <Label className="text-destructive font-bold">Extra Flat Discount (₹)</Label>
+                <Input 
+                  type="number" 
+                  min="0"
+                  value={extraDiscount || ""} 
+                  onChange={(e) => setExtraDiscount(parseFloat(e.target.value) || 0)} 
+                  placeholder="e.g. 500" 
+                  className="bg-destructive/10 border-destructive/30 text-destructive font-bold text-base" 
+                />
+              </div>
             </CardContent>
           </Card>
 
           <Card className="glass-panel rounded-2xl border-none shadow-sm bg-primary/5">
             <CardContent className="p-6">
-              <div className="flex flex-col space-y-4">
-                <div className="flex justify-between items-center pt-2">
+              <div className="flex flex-col space-y-3">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="font-semibold">₹{subTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                </div>
+                {totalDiscount > 0 && (
+                  <div className="flex justify-between items-center text-sm text-destructive font-semibold">
+                    <span>Total Discount Given</span>
+                    <span>- ₹{totalDiscount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                  </div>
+                )}
+                <div className="border-t border-border/50 pt-2 flex justify-between items-center">
                   <span className="text-lg font-bold">Total Amount</span>
                   <span className="text-3xl font-black text-primary">₹{grandTotal.toLocaleString("en-IN")}</span>
                 </div>

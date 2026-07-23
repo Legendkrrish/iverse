@@ -122,7 +122,7 @@ export const InvoicePrintTemplate = React.forwardRef<HTMLDivElement, { data: Inv
               {data.type === "GST" && <th style={{ border: "1px solid #000000", padding: "5px", width: "50px", textAlign: "center" }}>HSN</th>}
               <th style={{ border: "1px solid #000000", padding: "5px", width: "32px", textAlign: "center" }}>Qty</th>
               <th style={{ border: "1px solid #000000", padding: "5px", width: "70px", textAlign: "right" }}>Price (₹)</th>
-              {data.type === "GST" && <th style={{ border: "1px solid #000000", padding: "5px", width: "50px", textAlign: "right" }}>Disc (₹)</th>}
+              <th style={{ border: "1px solid #000000", padding: "5px", width: "55px", textAlign: "right" }}>Disc (₹)</th>
               {data.type === "GST" && <th style={{ border: "1px solid #000000", padding: "5px", width: "70px", textAlign: "right" }}>Taxable (₹)</th>}
               {data.type === "GST" && <th style={{ border: "1px solid #000000", padding: "5px", width: "40px", textAlign: "center" }}>GST</th>}
               <th style={{ border: "1px solid #000000", padding: "5px", width: "80px", textAlign: "right" }}>Total (₹)</th>
@@ -147,7 +147,7 @@ export const InvoicePrintTemplate = React.forwardRef<HTMLDivElement, { data: Inv
                   {data.type === "GST" && <td style={{ border: "1px solid #000000", padding: "5px", textAlign: "center", fontFamily: "monospace" }}>{item.hsnCode || "8517"}</td>}
                   <td style={{ border: "1px solid #000000", padding: "5px", textAlign: "center", fontWeight: "700" }}>{item.qty}</td>
                   <td style={{ border: "1px solid #000000", padding: "5px", textAlign: "right" }}>{item.mrp.toFixed(2)}</td>
-                  {data.type === "GST" && <td style={{ border: "1px solid #000000", padding: "5px", textAlign: "right" }}>{item.discount.toFixed(2)}</td>}
+                  <td style={{ border: "1px solid #000000", padding: "5px", textAlign: "right" }}>{(item.discount || 0).toFixed(2)}</td>
                   {data.type === "GST" && <td style={{ border: "1px solid #000000", padding: "5px", textAlign: "right" }}>{(taxable * item.qty).toFixed(2)}</td>}
                   {data.type === "GST" && <td style={{ border: "1px solid #000000", padding: "5px", textAlign: "center" }}>{item.gst}%</td>}
                   <td style={{ border: "1px solid #000000", padding: "5px", textAlign: "right", fontWeight: "900" }}>{total.toFixed(2)}</td>

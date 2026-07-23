@@ -21,6 +21,7 @@ export interface CreateInvoiceParams {
     gst: number;
   }>;
   subTotal: number;
+  discount?: number;
   taxableAmount: number;
   cgst: number;
   sgst: number;
@@ -61,7 +62,7 @@ export async function saveInvoice(params: CreateInvoiceParams) {
         customerId: customerId || null,
         paymentMode: params.paymentMode,
         subTotal: params.subTotal,
-        discount: 0,
+        discount: params.discount || 0,
         taxableAmount: params.taxableAmount,
         cgst: params.cgst,
         sgst: params.sgst,
