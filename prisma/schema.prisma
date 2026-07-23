@@ -1,0 +1,164 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("EMPLOYEE")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Customer {
+  id        String    @id @default(uuid())
+  name      String
+  mobile    String?
+  address   String?
+  state     String?
+  pinCode   String?
+  gstNumber String?
+  invoices  Invoice[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Supplier {
+  id        String     @id @default(uuid())
+  name      String
+  gstNumber String?
+  address   String?
+  contact   String?
+  products  Product[]
+  purchases Purchase[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Product {
+  id            String          @id @default(uuid())
+  name          String
+  brand         String?
+  category      String?
+  productType   String          @default("Accessories") // iPhone, Android Phone, Adapter, Cable, Watch, AirPods, Accessories
+  inventoryType String          @default("GST") // GST, NON_GST
+  sku           String?         @unique
+  barcode       String?
+  hsnCode       String?
+  purchasePrice Float           @default(0)
+  mrp           Float           @default(0) // Selling Price with GST included
+  gstPercentage Float           @default(0)
+  minStock      Int             @default(5)
+  supplierId    String?
+  supplier      Supplier?       @relation(fields: [supplierId], references: [id])
+  items         InventoryItem[] // The actual physical units in stock
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model InventoryItem {
+  id            String        @id @default(uuid())
+  productId     String
+  product       Product       @relation(fields: [productId], references: [id])
+  imei1         String?       @unique
+  imei2         String?       @unique
+  serialNumber  String?       @unique
+  color         String?
+  storage       String?
+  batteryHealth String?
+  modelNumber   String?
+  status        String        @default("IN_STOCK") // IN_STOCK, SOLD
+  purchaseId    String?
+  purchase      Purchase?     @relation(fields: [purchaseId], references: [id])
+  invoiceItemId String?       @unique
+  invoiceItem   InvoiceItem?  @relation(fields: [invoiceItemId], references: [id])
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Invoice {
+  id            String        @id @default(uuid())
+  invoiceNumber String        @unique
+  date          DateTime      @default(now())
+  type          String        @default("GST") // GST, NON_GST
+  customerId    String?
+  customer      Customer?     @relation(fields: [customerId], references: [id])
+  items         InvoiceItem[]
+  subTotal      Float         @default(0)
+  discount      Float         @default(0)
+  taxableAmount Float         @default(0)
+  cgst          Float         @default(0)
+  sgst          Float         @default(0)
+  igst          Float         @default(0)
+  totalAmount   Float         @default(0)
+  roundOff      Float         @default(0)
+  status        String        @default("PENDING")
+  paymentMode   String        @default("CASH")
+  placeOfSupply String?
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model InvoiceItem {
+  id            String          @id @default(uuid())
+  invoiceId     String
+  invoice       Invoice         @relation(fields: [invoiceId], references: [id])
+  inventoryItem InventoryItem?
+  quantity      Int             @default(1)
+  rate          Float           @default(0) // Taxable Rate
+  gstPercentage Float           @default(0)
+  discount      Float           @default(0)
+  amount        Float           @default(0) // Total for this item
+}
+
+model Purchase {
+  id             String          @id @default(uuid())
+  purchaseNumber String          @unique
+  supplierId     String
+  supplier       Supplier        @relation(fields: [supplierId], references: [id])
+  date           DateTime        @default(now())
+  items          InventoryItem[] // Track exactly which items came in this purchase
+  subTotal       Float           @default(0)
+  gst            Float           @default(0)
+  totalAmount    Float           @default(0)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model Expense {
+  id        String   @id @default(uuid())
+  category  String
+  amount    Float    @default(0)
+  date      DateTime @default(now())
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model StoreSetting {
+  id                 String   @id @default("default")
+  storeName          String   @default("iVerse Store")
+  address            String   @default("Company Bagh Road, Behind Govt. Hospital, Alwar, Rajasthan - 301001")
+  mobiles            String   @default("9462359499, 9079757323, 9024434685")
+  email              String   @default("iversestore01@gmail.com")
+  gstin              String   @default("08IYBPS5424R2ZH")
+  gstPrefix          String   @default("TAX-2026-")
+  nonGstPrefix       String   @default("INV-NGST-")
+  defaultPaymentMode String   @default("Cash")
+  bankName           String   @default("HDFC Bank Ltd")
+  accountNumber      String   @default("50200012345678")
+  ifsc               String   @default("HDFC0001234")
+  accountName        String   @default("iVerse Store")
+  upiId              String   @default("iverse@hdfcbank")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
