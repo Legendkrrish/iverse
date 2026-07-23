@@ -1,8 +1,5 @@
 "use client";
 
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
-
 export async function generatePdfFromElement(elementId: string, filename: string) {
   const element = document.getElementById(elementId);
   if (!element) {
@@ -12,7 +9,12 @@ export async function generatePdfFromElement(elementId: string, filename: string
   }
 
   try {
-    // Clone or temporary style fix for canvas rendering
+    // Dynamic import - only loaded when user actually generates a PDF
+    const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+      import("html2canvas"),
+      import("jspdf"),
+    ]);
+
     const canvas = await html2canvas(element, {
       scale: 2,
       useCORS: true,
@@ -44,7 +46,6 @@ export async function generatePdfFromElement(elementId: string, filename: string
     pdf.save(filename);
   } catch (error) {
     console.error("Failed to generate PDF via canvas:", error);
-    // Reliable Fallback to Browser Native PDF Print
     window.print();
   }
 }
