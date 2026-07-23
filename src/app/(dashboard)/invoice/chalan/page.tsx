@@ -151,8 +151,8 @@ export default function ChalanPage() {
     <div className="space-y-6 max-w-6xl mx-auto pb-20">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Non-GST Invoice</h1>
-          <p className="text-muted-foreground mt-1">Generate a Non-GST invoice using Non-GST inventory.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Create Invoice</h1>
+          <p className="text-muted-foreground mt-1">Generate a quick invoice & PDF.</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setShowPreview(true)} className="rounded-xl glass border-primary text-primary">

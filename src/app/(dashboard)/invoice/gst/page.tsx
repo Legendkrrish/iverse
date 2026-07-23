@@ -187,7 +187,7 @@ export default function GSTInvoicePage() {
     <div className="space-y-6 max-w-6xl mx-auto pb-20">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Create GST Invoice</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Create TAX Invoice</h1>
           <p className="text-muted-foreground mt-1">Generate a professional tax invoice & PDF.</p>
         </div>
         <div className="flex gap-2">
