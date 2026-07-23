@@ -118,6 +118,7 @@ export default function GSTInvoicePage() {
           brand: selected.brand,
           modelNumber: selected.modelNumber,
           storage: selected.storage,
+          color: selected.color,
           imei1: selected.imei1,
           serialNumber: selected.serialNumber,
         };

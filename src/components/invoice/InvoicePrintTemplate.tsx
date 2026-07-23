@@ -15,6 +15,7 @@ export interface InvoiceData {
     brand?: string | null;
     modelNumber?: string | null;
     storage?: string | null;
+    color?: string | null;
     imei1?: string | null;
     serialNumber?: string | null;
     hsnCode?: string;
@@ -139,7 +140,11 @@ export const InvoicePrintTemplate = React.forwardRef<HTMLDivElement, { data: Inv
                   <td style={{ border: "1px solid #000000", padding: "5px", textAlign: "center" }}>{idx + 1}</td>
                   <td style={{ border: "1px solid #000000", padding: "5px" }}>
                     <div style={{ fontWeight: "700", fontSize: "12px", color: "#000000" }}>{item.name || "Product"}</div>
-                    {item.storage && <div style={{ fontSize: "10px", color: "#374151", fontWeight: "600" }}>{item.storage}</div>}
+                    {(item.storage || item.color) && (
+                      <div style={{ fontSize: "10px", color: "#374151", fontWeight: "600" }}>
+                        {[item.storage, item.color].filter(Boolean).join(" | ")}
+                      </div>
+                    )}
                     {item.imei1 && <div style={{ fontSize: "10px", fontFamily: "monospace", fontWeight: "700", color: "#000000" }}>IMEI: {item.imei1}</div>}
                     {item.modelNumber && <div style={{ fontSize: "10px", fontFamily: "monospace", color: "#374151" }}>Model: {item.modelNumber}</div>}
                     {item.serialNumber && <div style={{ fontSize: "10px", fontFamily: "monospace", fontWeight: "700", color: "#000000" }}>Serial No: {item.serialNumber}</div>}

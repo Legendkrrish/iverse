@@ -63,7 +63,7 @@ export function ProductSearchInput({
       } else {
         setResults([]);
       }
-    }, 300);
+    }, 200);
 
     return () => clearTimeout(timer);
   }, [query, isOpen, invoiceType]);
@@ -115,7 +115,9 @@ export function ProductSearchInput({
                 <span>{item.displayName}</span>
                 <span className="text-xs font-semibold text-primary">₹{item.mrp}</span>
               </div>
-              <div className="text-[11px] text-muted-foreground flex gap-3">
+              <div className="text-[11px] text-muted-foreground flex gap-3 flex-wrap">
+                {item.storage && <span>{item.storage}</span>}
+                {item.color && <span>{item.color}</span>}
                 {invoiceType === "GST" && item.gstPercentage > 0 && <span>GST: {item.gstPercentage}%</span>}
                 {invoiceType === "GST" && item.hsnCode && <span>HSN: {item.hsnCode}</span>}
                 <span className="capitalize text-xs font-medium text-blue-600 dark:text-blue-400">
