@@ -233,7 +233,8 @@ export function CustomerClient({ initialCustomers }: { initialCustomers: Custome
 
       {/* Table */}
       <div className="glass-panel rounded-2xl overflow-hidden border border-border/50">
-        <Table>
+        <div className="overflow-x-auto w-full">
+          <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
               <TableHead className="font-semibold text-foreground">Customer Name</TableHead>
@@ -330,6 +331,7 @@ export function CustomerClient({ initialCustomers }: { initialCustomers: Custome
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       {/* 1. Add Customer Dialog */}

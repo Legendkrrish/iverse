@@ -143,22 +143,23 @@ export function InventoryClient({ initialProducts, inventoryType }: { initialPro
 
       {/* Table Panel */}
       <div className="glass-panel rounded-2xl overflow-hidden border border-border/50">
-        <div className="p-4 border-b border-border/50 flex justify-between items-center bg-card/50">
+        <div className="p-3 sm:p-4 border-b border-border/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-card/50">
           <div className="relative w-full max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input 
               placeholder={`Search ${isGST ? "GST" : "Non-GST"} products by Name, SKU, Barcode...`}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 bg-background border-none rounded-lg focus-visible:ring-1 focus-visible:ring-primary"
+              className="pl-10 bg-background border-none rounded-lg focus-visible:ring-1 focus-visible:ring-primary text-sm"
             />
           </div>
-          <div className="text-xs font-semibold text-muted-foreground">
+          <div className="text-xs font-semibold text-muted-foreground self-end sm:self-auto">
             Total Products: <span className="text-foreground font-bold">{filteredProducts.length}</span>
           </div>
         </div>
         
-        <Table>
+        <div className="overflow-x-auto w-full">
+          <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
               <TableHead className="font-semibold">Product Name</TableHead>
@@ -235,6 +236,7 @@ export function InventoryClient({ initialProducts, inventoryType }: { initialPro
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       {/* Edit Product Modal */}

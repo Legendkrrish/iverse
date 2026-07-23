@@ -252,8 +252,8 @@ export default function ReportsPage() {
                 </p>
               </div>
             </div>
-
-            <Table>
+            <div className="overflow-x-auto w-full">
+              <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow>
                   <TableHead>Invoice No.</TableHead>
@@ -307,6 +307,7 @@ export default function ReportsPage() {
                 )}
               </TableBody>
             </Table>
+            </div>
           </div>
         </>
       )}
