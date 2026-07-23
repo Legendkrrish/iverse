@@ -6,76 +6,85 @@ import { redirect } from "next/navigation";
 
 export async function createProduct(formData: FormData) {
   const name = formData.get("name") as string;
-  const brand = formData.get("brand") as string;
-  const category = formData.get("category") as string;
-  const productType = formData.get("productType") as string || "Accessories";
-  const inventoryType = formData.get("inventoryType") as string || "GST"; // GST or NON_GST
-  const sku = formData.get("sku") as string;
-  const barcode = formData.get("barcode") as string;
-  const hsnCode = formData.get("hsnCode") as string;
-  
+  const brand = (formData.get("brand") as string)?.trim() || null;
+  const category = (formData.get("category") as string)?.trim() || null;
+  const productType = (formData.get("productType") as string) || "Accessories";
+  const inventoryType = (formData.get("inventoryType") as string) || "GST"; // GST or NON_GST
+  const sku = (formData.get("sku") as string)?.trim() || null;
+  const barcode = (formData.get("barcode") as string)?.trim() || null;
+  const hsnCode = (formData.get("hsnCode") as string)?.trim() || "8517";
+
   const purchasePrice = parseFloat(formData.get("purchasePrice") as string) || 0;
   const mrp = parseFloat(formData.get("mrp") as string) || 0;
   const gstPercentage = parseFloat(formData.get("gstPercentage") as string) || 0;
   const minStock = parseInt(formData.get("minStock") as string) || 5;
 
   // Fields for specific items
-  const imei1 = formData.get("imei1") as string;
-  const imei2 = formData.get("imei2") as string;
-  const serialNumber = formData.get("serialNumber") as string;
-  const color = formData.get("color") as string;
-  const storage = formData.get("storage") as string;
-  const batteryHealth = formData.get("batteryHealth") as string;
-  const modelNumber = formData.get("modelNumber") as string;
+  const imei1 = (formData.get("imei1") as string)?.trim() || null;
+  const imei2 = (formData.get("imei2") as string)?.trim() || null;
+  const serialNumber = (formData.get("serialNumber") as string)?.trim() || null;
+  const color = (formData.get("color") as string)?.trim() || null;
+  const storage = (formData.get("storage") as string)?.trim() || null;
+  const batteryHealth = (formData.get("batteryHealth") as string)?.trim() || null;
+  const modelNumber = (formData.get("modelNumber") as string)?.trim() || null;
   const initialStockQuantity = parseInt(formData.get("stock") as string) || 0;
 
-  // 1. Create Product Template
-  const product = await prisma.product.create({
-    data: {
-      name,
-      brand,
-      category,
-      productType,
-      inventoryType,
-      sku,
-      barcode,
-      hsnCode,
-      purchasePrice,
-      mrp,
-      gstPercentage: inventoryType === "NON_GST" ? 0 : gstPercentage,
-      minStock,
-    }
-  });
-
-  // 2. Create physical stock items
-  if (imei1 || serialNumber || initialStockQuantity > 0) {
-    if (imei1 || serialNumber) {
-      await prisma.inventoryItem.create({
-        data: {
-          productId: product.id,
-          imei1: imei1 || null,
-          imei2: imei2 || null,
-          serialNumber: serialNumber || null,
-          color: color || null,
-          storage: storage || null,
-          batteryHealth: batteryHealth || null,
-          modelNumber: modelNumber || null,
-          status: "IN_STOCK"
-        }
-      });
-    } else {
-      const itemsToCreate = Array.from({ length: initialStockQuantity }).map(() => ({
-        productId: product.id,
-        status: "IN_STOCK"
-      }));
-      await prisma.inventoryItem.createMany({
-        data: itemsToCreate
-      });
-    }
+  if (!name || name.trim().length === 0) {
+    return { success: false, error: "Product name is required" };
   }
 
-  revalidatePath("/inventory");
-  redirect(`/inventory?type=${inventoryType}`);
+  try {
+    // 1. Create Product Template
+    const product = await prisma.product.create({
+      data: {
+        name: name.trim(),
+        brand,
+        category,
+        productType,
+        inventoryType,
+        sku,
+        barcode,
+        hsnCode,
+        purchasePrice,
+        mrp,
+        gstPercentage: inventoryType === "NON_GST" ? 0 : gstPercentage,
+        minStock,
+      },
+    });
+
+    // 2. Create physical stock items
+    if (imei1 || serialNumber || initialStockQuantity > 0) {
+      if (imei1 || serialNumber) {
+        await prisma.inventoryItem.create({
+          data: {
+            productId: product.id,
+            imei1,
+            imei2,
+            serialNumber,
+            color,
+            storage,
+            batteryHealth,
+            modelNumber,
+            status: "IN_STOCK",
+          },
+        });
+      } else {
+        const itemsToCreate = Array.from({ length: Math.max(1, initialStockQuantity) }).map(() => ({
+          productId: product.id,
+          status: "IN_STOCK",
+        }));
+        await prisma.inventoryItem.createMany({
+          data: itemsToCreate,
+        });
+      }
+    }
+
+    revalidatePath("/inventory");
+    return { success: true, inventoryType };
+  } catch (e: any) {
+    console.error("Error creating product:", e);
+    return { success: false, error: e.message || "Failed to create product" };
+  }
 }
 
 export async function getProducts(inventoryTypeFilter?: string) {

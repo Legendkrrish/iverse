@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { createProduct } from "@/app/actions/product";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,13 +14,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
 function AddProductForm() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [productType, setProductType] = useState("Accessories");
   const [inventoryType, setInventoryType] = useState(searchParams.get("type") || "GST");
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMsg(null);
+
+    const formData = new FormData(e.currentTarget);
+    const res = await createProduct(formData);
+
+    if (res && res.success) {
+      router.push(`/inventory?type=${res.inventoryType || inventoryType}`);
+      router.refresh();
+    } else {
+      setErrorMsg(res?.error || "Failed to save product. Please try again.");
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -36,7 +56,14 @@ function AddProductForm() {
         </div>
       </div>
 
-      <form action={createProduct} className="space-y-6">
+      {errorMsg && (
+        <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive flex items-center gap-3 text-sm font-semibold">
+          <AlertCircle className="h-5 w-5 shrink-0" />
+          <span>{errorMsg}</span>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6">
         <Card className="glass-panel rounded-2xl">
           <CardHeader>
             <CardTitle>Product & Inventory Configuration</CardTitle>
@@ -196,10 +223,16 @@ function AddProductForm() {
 
         <div className="flex justify-end gap-4">
           <Link href="/inventory">
-            <Button variant="outline" type="button" className="rounded-xl">Cancel</Button>
+            <Button variant="outline" type="button" disabled={loading} className="rounded-xl">Cancel</Button>
           </Link>
-          <Button type="submit" size="lg" className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90">
-            Save Product to {inventoryType === "GST" ? "GST Inventory" : "Non-GST Inventory"}
+          <Button type="submit" size="lg" disabled={loading} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90">
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
+              </>
+            ) : (
+              `Save Product to ${inventoryType === "GST" ? "GST Inventory" : "Non-GST Inventory"}`
+            )}
           </Button>
         </div>
       </form>
