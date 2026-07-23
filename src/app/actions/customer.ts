@@ -4,41 +4,46 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
 export async function getCustomers(query?: string) {
-  const where = query
-    ? {
-        OR: [
-          { name: { contains: query, mode: "insensitive" as const } },
-          { mobile: { contains: query, mode: "insensitive" as const } },
-          { gstNumber: { contains: query, mode: "insensitive" as const } },
-          { address: { contains: query, mode: "insensitive" as const } },
-        ],
-      }
-    : {};
+  try {
+    const where = query
+      ? {
+          OR: [
+            { name: { contains: query, mode: "insensitive" as const } },
+            { mobile: { contains: query, mode: "insensitive" as const } },
+            { gstNumber: { contains: query, mode: "insensitive" as const } },
+            { address: { contains: query, mode: "insensitive" as const } },
+          ],
+        }
+      : {};
 
-  const customers = await prisma.customer.findMany({
-    where,
-    include: {
-      invoices: {
-        select: {
-          id: true,
-          invoiceNumber: true,
-          date: true,
-          type: true,
-          totalAmount: true,
-          paymentMode: true,
-          notes: true,
+    const customers = await prisma.customer.findMany({
+      where,
+      include: {
+        invoices: {
+          select: {
+            id: true,
+            invoiceNumber: true,
+            date: true,
+            type: true,
+            totalAmount: true,
+            paymentMode: true,
+            notes: true,
+          },
+          orderBy: { date: "desc" },
         },
-        orderBy: { date: "desc" },
       },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+      orderBy: { createdAt: "desc" },
+    });
 
-  return customers.map((c) => ({
-    ...c,
-    invoiceCount: c.invoices.length,
-    totalSpent: c.invoices.reduce((sum, inv) => sum + inv.totalAmount, 0),
-  }));
+    return customers.map((c) => ({
+      ...c,
+      invoiceCount: c.invoices.length,
+      totalSpent: c.invoices.reduce((sum, inv) => sum + inv.totalAmount, 0),
+    }));
+  } catch (e) {
+    console.error("Error fetching customers:", e);
+    return [];
+  }
 }
 
 export async function createCustomer(formData: FormData) {

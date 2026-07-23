@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { DashboardCharts } from "./components/DashboardCharts";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   const [metrics, settings] = await Promise.all([
     getDashboardMetrics(),

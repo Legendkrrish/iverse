@@ -79,22 +79,27 @@ export async function createProduct(formData: FormData) {
 }
 
 export async function getProducts(inventoryTypeFilter?: string) {
-  const whereCondition = inventoryTypeFilter ? { inventoryType: inventoryTypeFilter } : {};
+  try {
+    const whereCondition = inventoryTypeFilter ? { inventoryType: inventoryTypeFilter } : {};
 
-  const products = await prisma.product.findMany({
-    where: whereCondition,
-    include: {
-      items: {
-        where: { status: "IN_STOCK" }
-      }
-    },
-    orderBy: { createdAt: "desc" }
-  });
+    const products = await prisma.product.findMany({
+      where: whereCondition,
+      include: {
+        items: {
+          where: { status: "IN_STOCK" }
+        }
+      },
+      orderBy: { createdAt: "desc" }
+    });
 
-  return products.map(p => ({
-    ...p,
-    stock: p.items.length
-  }));
+    return products.map(p => ({
+      ...p,
+      stock: p.items.length
+    }));
+  } catch (e) {
+    console.error("Error fetching products:", e);
+    return [];
+  }
 }
 
 export async function updateProduct(id: string, formData: FormData) {
