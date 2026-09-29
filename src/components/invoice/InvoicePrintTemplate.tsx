@@ -69,7 +69,7 @@ export const InvoicePrintTemplate = React.forwardRef<HTMLDivElement, { data: Inv
           <img
             src="/logo.png"
             alt="iVerse Logo"
-            style={{ height: "95px", width: "auto", objectFit: "contain", marginBottom: "6px" }}
+            style={{ height: "110px", width: "auto", objectFit: "contain", marginBottom: "6px" }}
             onError={(e) => {
               e.currentTarget.style.display = 'none';
             }}
