@@ -13,6 +13,7 @@ import {
   PieChart
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { logoutAdmin } from "@/app/actions/auth";
 
 export const navItems = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -27,6 +28,11 @@ export const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+
+  const handleLogout = async () => {
+    await logoutAdmin();
+    window.location.href = "/login";
+  };
 
   return (
     <aside className="hidden md:flex w-64 flex-col h-screen glass border-r z-20 sticky top-0 shrink-0">
@@ -56,7 +62,7 @@ export function Sidebar() {
       </nav>
 
       <div className="p-4 border-t border-border/50">
-        <Button variant="ghost" className="w-full justify-start rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10 transition-all duration-200">
+        <Button onClick={handleLogout} variant="ghost" className="w-full justify-start rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10 transition-all duration-200">
           <LogOut className="mr-3 h-5 w-5" />
           Logout
         </Button>

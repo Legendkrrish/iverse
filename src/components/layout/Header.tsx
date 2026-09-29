@@ -9,11 +9,17 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { logoutAdmin } from "@/app/actions/auth";
 import { navItems } from "./Sidebar";
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+
+  const handleLogout = async () => {
+    await logoutAdmin();
+    window.location.href = "/login";
+  };
 
   return (
     <>
@@ -75,7 +81,7 @@ export function Header() {
                 Billing Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer text-destructive">
+              <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive">
                 Log out
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -125,7 +131,7 @@ export function Header() {
             </nav>
 
             <div className="pt-4 border-t border-border/50">
-              <Button variant="ghost" className="w-full justify-start rounded-xl text-destructive hover:bg-destructive/10">
+              <Button onClick={handleLogout} variant="ghost" className="w-full justify-start rounded-xl text-destructive hover:bg-destructive/10">
                 <LogOut className="mr-3 h-5 w-5" />
                 Logout
               </Button>

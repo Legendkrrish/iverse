@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { getStoreSettings, updateStoreSettings } from "@/app/actions/settings";
+import { changeAdminPassword } from "@/app/actions/auth";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Store, FileText, Building2, ShieldCheck, Save, CheckCircle2, Loader2 } from "lucide-react";
+import { Store, FileText, Building2, ShieldCheck, Save, CheckCircle2, Loader2, KeyRound, Lock } from "lucide-react";
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
@@ -325,6 +326,9 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
+      {/* 5. Admin Security & Password Card */}
+      <AdminPasswordCard />
+
       <div className="flex justify-end">
         <Button onClick={handleSave} disabled={isSaving} size="lg" className="rounded-xl bg-primary text-primary-foreground">
           {isSaving ? (
@@ -339,5 +343,88 @@ export default function SettingsPage() {
         </Button>
       </div>
     </div>
+  );
+}
+
+function AdminPasswordCard() {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [msg, setMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setMsg(null);
+    setIsUpdating(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("currentPassword", currentPassword);
+      formData.append("newPassword", newPassword);
+
+      const res = await changeAdminPassword(formData);
+      if (res.success) {
+        setMsg({ type: "success", text: res.message || "Password updated successfully!" });
+        setCurrentPassword("");
+        setNewPassword("");
+      } else {
+        setMsg({ type: "error", text: res.error || "Failed to update password" });
+      }
+    } catch (e: any) {
+      setMsg({ type: "error", text: e.message || "An error occurred" });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  return (
+    <Card className="glass-panel border-primary/20">
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <KeyRound className="h-5 w-5 text-primary" /> Admin Account Security & Password
+        </CardTitle>
+        <CardDescription>
+          Change your admin password to protect store data and billing access.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {msg && (
+          <div className={`mb-4 p-3 rounded-xl text-sm border flex items-center gap-2 ${msg.type === "success" ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600" : "bg-destructive/10 border-destructive/30 text-destructive"}`}>
+            {msg.type === "success" ? <CheckCircle2 className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
+            <span>{msg.text}</span>
+          </div>
+        )}
+        <form onSubmit={handlePasswordChange} className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+          <div className="space-y-2">
+            <Label>Current Password</Label>
+            <Input
+              type="password"
+              required
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              placeholder="••••••••"
+              className="bg-background"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>New Password</Label>
+            <Input
+              type="password"
+              required
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Min 6 characters"
+              className="bg-background"
+            />
+          </div>
+          <div>
+            <Button type="submit" disabled={isUpdating} className="w-full rounded-xl bg-primary text-primary-foreground">
+              {isUpdating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lock className="mr-2 h-4 w-4" />}
+              Update Password
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
