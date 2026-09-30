@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get("iverse_admin_session");
 
@@ -9,7 +9,7 @@ export function middleware(request: NextRequest) {
   const isPublicPath =
     pathname === "/login" ||
     pathname.startsWith("/_next") ||
-    pathname.startsWith("/api/public") ||
+    pathname.startsWith("/api") ||
     pathname === "/favicon.ico" ||
     pathname === "/logo.png";
 
@@ -30,9 +30,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except static files (_next/static, _next/image, favicon.ico, logo.png)
-     */
-    "/((?!_next/static|_next/image|favicon.ico|logo.png).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|logo.png).*)",
   ],
 };
