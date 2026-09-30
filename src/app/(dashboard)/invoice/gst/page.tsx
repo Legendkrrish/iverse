@@ -45,7 +45,22 @@ export default function GSTInvoicePage() {
     getStoreSettings().then(setStoreSettings);
   }, []);
 
-  const [items, setItems] = useState([
+  const [items, setItems] = useState<Array<{
+    id: number;
+    name: string;
+    brand?: string | null;
+    modelNumber?: string | null;
+    storage?: string | null;
+    color?: string | null;
+    imei1?: string | null;
+    serialNumber?: string | null;
+    inventoryItemId?: string;
+    qty: number;
+    mrp: number;
+    discount: number;
+    gst: number;
+    hsnCode: string;
+  }>>([
     { id: 1, name: "", qty: 1, mrp: 0, discount: 0, gst: 18, hsnCode: "8517", inventoryItemId: undefined }
   ]);
 
@@ -318,6 +333,45 @@ export default function GSTInvoicePage() {
                             onSelectProduct={(selected) => handleSelectProduct(item.id, selected)}
                             placeholder="Type iPhone name, IMEI, SN..."
                           />
+                          {(item.storage || item.color || item.imei1 || item.serialNumber) && (
+                            <div className="flex flex-wrap items-center gap-1 mt-1 text-[10px]">
+                              {item.storage && (
+                                <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-700 dark:text-blue-300 font-semibold border border-blue-500/20">
+                                  {item.storage}
+                                </span>
+                              )}
+                              {item.color && (
+                                <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-700 dark:text-purple-300 font-semibold border border-purple-500/20">
+                                  {item.color}
+                                </span>
+                              )}
+                              {item.imei1 && (
+                                <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-mono font-bold border border-emerald-500/20">
+                                  IMEI: {item.imei1}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          <div className="grid grid-cols-3 gap-1 mt-1">
+                            <Input
+                              value={item.storage || ""}
+                              onChange={(e) => updateItem(item.id, 'storage', e.target.value)}
+                              placeholder="Storage (e.g. 256GB)"
+                              className="h-6 text-[10px] px-1.5 bg-black/5 dark:bg-white/5 border-none rounded"
+                            />
+                            <Input
+                              value={item.color || ""}
+                              onChange={(e) => updateItem(item.id, 'color', e.target.value)}
+                              placeholder="Color (e.g. Titanium)"
+                              className="h-6 text-[10px] px-1.5 bg-black/5 dark:bg-white/5 border-none rounded"
+                            />
+                            <Input
+                              value={item.imei1 || ""}
+                              onChange={(e) => updateItem(item.id, 'imei1', e.target.value)}
+                              placeholder="IMEI Number"
+                              className="h-6 text-[10px] px-1.5 bg-black/5 dark:bg-white/5 border-none font-mono rounded"
+                            />
+                          </div>
                         </TableCell>
                         <TableCell className="p-2">
                           <Input 

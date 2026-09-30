@@ -148,16 +148,28 @@ export const InvoicePrintTemplate = React.forwardRef<HTMLDivElement, { data: Inv
               return (
                 <tr key={idx} style={{ borderBottom: "1px solid #d1d5db", verticalAlign: "top" }}>
                   <td style={{ border: "1px solid #000000", padding: "5px", textAlign: "center" }}>{idx + 1}</td>
-                  <td style={{ border: "1px solid #000000", padding: "5px" }}>
-                    <div style={{ fontWeight: "700", fontSize: "12px", color: "#000000" }}>{item.name || "Product"}</div>
+                  <td style={{ border: "1px solid #000000", padding: "6px" }}>
+                    <div style={{ fontWeight: "800", fontSize: "12.5px", color: "#000000" }}>{item.name || "Product"}</div>
                     {(item.storage || item.color) && (
-                      <div style={{ fontSize: "10px", color: "#374151", fontWeight: "600" }}>
-                        {[item.storage, item.color].filter(Boolean).join(" | ")}
+                      <div style={{ fontSize: "11px", color: "#1f2937", fontWeight: "700", marginTop: "2px" }}>
+                        {[item.storage, item.color].filter(Boolean).join(" • ")}
                       </div>
                     )}
-                    {item.imei1 && <div style={{ fontSize: "10px", fontFamily: "monospace", fontWeight: "700", color: "#000000" }}>IMEI: {item.imei1}</div>}
-                    {item.modelNumber && <div style={{ fontSize: "10px", fontFamily: "monospace", color: "#374151" }}>Model: {item.modelNumber}</div>}
-                    {item.serialNumber && <div style={{ fontSize: "10px", fontFamily: "monospace", fontWeight: "700", color: "#000000" }}>Serial No: {item.serialNumber}</div>}
+                    {item.imei1 && (
+                      <div style={{ fontSize: "11px", fontFamily: "monospace", fontWeight: "800", color: "#000000", marginTop: "2px" }}>
+                        IMEI: {item.imei1}
+                      </div>
+                    )}
+                    {item.modelNumber && (
+                      <div style={{ fontSize: "10px", fontFamily: "monospace", color: "#4b5563", marginTop: "1px" }}>
+                        Model: {item.modelNumber}
+                      </div>
+                    )}
+                    {item.serialNumber && (
+                      <div style={{ fontSize: "10.5px", fontFamily: "monospace", fontWeight: "700", color: "#000000", marginTop: "1px" }}>
+                        Serial No: {item.serialNumber}
+                      </div>
+                    )}
                   </td>
                   {data.type === "GST" && <td style={{ border: "1px solid #000000", padding: "5px", textAlign: "center", fontFamily: "monospace" }}>{item.hsnCode || "8517"}</td>}
                   <td style={{ border: "1px solid #000000", padding: "5px", textAlign: "center", fontWeight: "700" }}>{item.qty}</td>

@@ -209,7 +209,7 @@ export async function searchInventoryItems(query: string, invoiceType: "GST" | "
     take: 10
   });
 
-  // 2. Find InventoryItems strictly by inventoryType
+  // 2. Find InventoryItems strictly by inventoryType - matching IMEI, serial, color, storage, OR product name/brand
   const inventoryItems = await prisma.inventoryItem.findMany({
     where: {
       status: "IN_STOCK",
@@ -220,12 +220,17 @@ export async function searchInventoryItems(query: string, invoiceType: "GST" | "
         { imei1: { contains: searchTerm, mode: "insensitive" } },
         { imei2: { contains: searchTerm, mode: "insensitive" } },
         { serialNumber: { contains: searchTerm, mode: "insensitive" } },
+        { color: { contains: searchTerm, mode: "insensitive" } },
+        { storage: { contains: searchTerm, mode: "insensitive" } },
+        { product: { name: { contains: searchTerm, mode: "insensitive" } } },
+        { product: { brand: { contains: searchTerm, mode: "insensitive" } } },
+        { product: { sku: { contains: searchTerm, mode: "insensitive" } } },
       ]
     },
     include: {
       product: true
     },
-    take: 10
+    take: 15
   });
 
   const results: Array<{
@@ -246,22 +251,17 @@ export async function searchInventoryItems(query: string, invoiceType: "GST" | "
     color?: string | null;
   }> = [];
 
-  // Format Specific Items (IMEI / Serial Number) according to exact prompt rules
+  // Format Specific In-Stock Items (IMEI, Storage, Color, Serial)
   for (const item of inventoryItems) {
-    const isPhone = item.product.productType === "iPhone" || item.product.productType === "Android Phone" || item.product.category?.toLowerCase().includes("phone");
     let displayTitle = item.product.name;
-    let detailsString = "";
+    const detailsParts: string[] = [];
 
-    if (isPhone) {
-      // Requirement 4: Phone Product Details (Brand, Model, Storage, IMEI)
-      if (item.storage) detailsString += `${item.storage}`;
-      if (item.imei1) detailsString += `${detailsString ? " | " : ""}IMEI: ${item.imei1}`;
-    } else {
-      // Requirement 5: Accessories Details (Brand, Model, Serial Number)
-      if (item.modelNumber) detailsString += `Model: ${item.modelNumber}`;
-      if (item.serialNumber) detailsString += `${detailsString ? " | " : ""}Serial No: ${item.serialNumber}`;
-    }
+    if (item.storage) detailsParts.push(item.storage);
+    if (item.color) detailsParts.push(item.color);
+    if (item.imei1) detailsParts.push(`IMEI: ${item.imei1}`);
+    if (item.serialNumber) detailsParts.push(`SN: ${item.serialNumber}`);
 
+    const detailsString = detailsParts.join(" • ");
     const fullDisplayName = detailsString ? `${displayTitle} (${detailsString})` : displayTitle;
 
     results.push({
@@ -283,18 +283,57 @@ export async function searchInventoryItems(query: string, invoiceType: "GST" | "
     });
   }
 
-  // Add General Products
+  // Also include matched products, auto-attaching in-stock unit specs if available
   for (const p of products) {
+    // Add any in-stock items of this product that weren't caught yet
+    for (const item of p.items) {
+      if (!results.some(r => r.inventoryItemId === item.id)) {
+        const detailsParts: string[] = [];
+        if (item.storage) detailsParts.push(item.storage);
+        if (item.color) detailsParts.push(item.color);
+        if (item.imei1) detailsParts.push(`IMEI: ${item.imei1}`);
+        if (item.serialNumber) detailsParts.push(`SN: ${item.serialNumber}`);
+
+        const detailsString = detailsParts.join(" • ");
+        results.push({
+          id: p.id,
+          inventoryItemId: item.id,
+          displayName: detailsString ? `${p.name} (${detailsString})` : p.name,
+          name: p.name,
+          brand: p.brand,
+          modelNumber: item.modelNumber,
+          productType: p.productType,
+          mrp: p.mrp,
+          gstPercentage: invoiceType === "NON_GST" ? 0 : p.gstPercentage,
+          hsnCode: p.hsnCode,
+          imei1: item.imei1,
+          imei2: item.imei2,
+          serialNumber: item.serialNumber,
+          storage: item.storage,
+          color: item.color,
+        });
+      }
+    }
+
+    // Add general product entry, populating first in-stock item specs if available
+    const firstItem = p.items[0];
     if (!results.some(r => r.id === p.id && !r.inventoryItemId)) {
       results.push({
         id: p.id,
+        inventoryItemId: firstItem?.id,
         displayName: `${p.name} (In Stock: ${p.items.length})`,
         name: p.name,
         brand: p.brand,
+        modelNumber: firstItem?.modelNumber || null,
         productType: p.productType,
         mrp: p.mrp,
         gstPercentage: invoiceType === "NON_GST" ? 0 : p.gstPercentage,
         hsnCode: p.hsnCode,
+        imei1: firstItem?.imei1 || null,
+        imei2: firstItem?.imei2 || null,
+        serialNumber: firstItem?.serialNumber || null,
+        storage: firstItem?.storage || null,
+        color: firstItem?.color || null,
       });
     }
   }
