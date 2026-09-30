@@ -35,6 +35,11 @@ export default function LoginPage() {
         setError(res.error || "Invalid username or password");
       }
     } catch (err: any) {
+      if (err?.message?.includes("Server Action") || err?.message?.includes("failed-to-find-server-action") || err?.message?.includes("not found on the server")) {
+        setError("New version deployed. Refreshing page...");
+        setTimeout(() => window.location.reload(), 800);
+        return;
+      }
       setError(err.message || "An unexpected error occurred");
     } finally {
       setIsLoading(false);

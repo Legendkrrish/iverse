@@ -30,14 +30,24 @@ function AddProductForm() {
     setLoading(true);
     setErrorMsg(null);
 
-    const formData = new FormData(e.currentTarget);
-    const res = await createProduct(formData);
+    try {
+      const formData = new FormData(e.currentTarget);
+      const res = await createProduct(formData);
 
-    if (res && res.success) {
-      router.push(`/inventory?type=${res.inventoryType || inventoryType}`);
-      router.refresh();
-    } else {
-      setErrorMsg(res?.error || "Failed to save product. Please try again.");
+      if (res && res.success) {
+        router.push(`/inventory?type=${res.inventoryType || inventoryType}`);
+        router.refresh();
+      } else {
+        setErrorMsg(res?.error || "Failed to save product. Please try again.");
+        setLoading(false);
+      }
+    } catch (err: any) {
+      if (err?.message?.includes("Server Action") || err?.message?.includes("failed-to-find-server-action") || err?.message?.includes("not found on the server")) {
+        setErrorMsg("New version deployed. Refreshing page...");
+        setTimeout(() => window.location.reload(), 800);
+        return;
+      }
+      setErrorMsg(err.message || "Failed to save product. Please try again.");
       setLoading(false);
     }
   };
