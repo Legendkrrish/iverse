@@ -148,7 +148,7 @@ model StoreSetting {
   id                 String   @id @default("default")
   storeName          String   @default("iVerse Store")
   address            String   @default("Company Bagh Road, Behind Govt. Hospital, Alwar, Rajasthan - 301001")
-  mobiles            String   @default("9462359499, 9079757323, 9024434685")
+  mobiles            String   @default("9462359499")
   email              String   @default("iversestore01@gmail.com")
   gstin              String   @default("08IYBPS5424R2ZH")
   gstPrefix          String   @default("TAX-2026-")

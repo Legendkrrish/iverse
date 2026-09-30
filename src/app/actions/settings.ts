@@ -22,7 +22,7 @@ export interface StoreSettingsData {
 const DEFAULT_SETTINGS: StoreSettingsData = {
   storeName: "iVerse Store",
   address: "Company Bagh Road, Behind Govt. Hospital, Alwar, Rajasthan - 301001",
-  mobiles: "9462359499, 9079757323, 9024434685",
+  mobiles: "9462359499",
   email: "iversestore01@gmail.com",
   gstin: "08IYBPS5424R2ZH",
   gstPrefix: "TAX-2026-",
@@ -50,10 +50,19 @@ export async function getStoreSettings(): Promise<StoreSettingsData> {
       });
     }
 
+    // Ensure only 9462359499 is used if old numbers are present in database
+    if (settings.mobiles && (settings.mobiles.includes("9079757323") || settings.mobiles.includes("9024434685"))) {
+      settings.mobiles = "9462359499";
+      prisma.storeSetting.update({
+        where: { id: "default" },
+        data: { mobiles: "9462359499" },
+      }).catch(() => {});
+    }
+
     return {
       storeName: settings.storeName,
       address: settings.address,
-      mobiles: settings.mobiles,
+      mobiles: settings.mobiles || "9462359499",
       email: settings.email,
       gstin: settings.gstin,
       gstPrefix: settings.gstPrefix,

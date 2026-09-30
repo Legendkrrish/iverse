@@ -17,7 +17,7 @@ export default function SettingsPage() {
   // Store Details State
   const [storeName, setStoreName] = useState("iVerse Store");
   const [address, setAddress] = useState("Company Bagh Road, Behind Govt. Hospital, Alwar, Rajasthan - 301001");
-  const [mobiles, setMobiles] = useState("9462359499, 9079757323, 9024434685");
+  const [mobiles, setMobiles] = useState("9462359499");
   const [email, setEmail] = useState("iversestore01@gmail.com");
   const [gstin, setGstin] = useState("08IYBPS5424R2ZH");
 

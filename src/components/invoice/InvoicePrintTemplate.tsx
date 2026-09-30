@@ -64,36 +64,46 @@ export const InvoicePrintTemplate = React.forwardRef<HTMLDivElement, { data: Inv
           border: "1px solid #e5e7eb"
         }}
       >
-        {/* Logo + Store Name + Invoice Heading */}
-        <div style={{ textAlign: "center", marginBottom: "12px", paddingBottom: "10px", borderBottom: "2px solid #000000" }}>
-          <img
-            src="/logo.png"
-            alt="iVerse Logo"
-            style={{ height: "110px", width: "auto", objectFit: "contain", marginBottom: "6px" }}
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-            }}
-          />
-          <h2 style={{ fontSize: "20px", fontWeight: "900", textTransform: "uppercase", letterSpacing: "3px", color: "#000000", margin: "6px 0 0 0" }}>
-            {data.type === "GST" ? "TAX INVOICE" : "INVOICE"}
-          </h2>
-        </div>
-
-        {/* Store Details + Invoice Meta */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", paddingBottom: "10px", marginBottom: "12px", borderBottom: "1px solid #d1d5db" }}>
-          <div>
-            <p style={{ fontSize: "11px", color: "#374151", margin: "0 0 1px 0" }}>{data.storeSettings?.address || "Company Bagh Road, Behind Govt. Hospital, Alwar, Rajasthan - 301001"}</p>
-            <p style={{ fontSize: "11px", color: "#374151", margin: "0 0 1px 0" }}>Mob: {data.storeSettings?.mobiles || "9462359499, 9079757323, 9024434685"}</p>
-            <p style={{ fontSize: "11px", color: "#374151", margin: "0 0 1px 0" }}>Email: {data.storeSettings?.email || "iversestore01@gmail.com"}</p>
-            {data.type === "GST" && <p style={{ fontSize: "11px", fontWeight: "700", color: "#000000", margin: "3px 0 0 0" }}>GSTIN: {data.storeSettings?.gstin || "08IYBPS5424R2ZH"}</p>}
+        {/* Header: Enlarged Logo + Address (Side-by-Side) | Invoice Heading & Meta */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "12px", marginBottom: "14px", borderBottom: "2px solid #000000" }}>
+          {/* Left: Big Logo + Store Address Beside It */}
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <img
+              src="/logo.png"
+              alt="iVerse Logo"
+              style={{ height: "135px", width: "auto", objectFit: "contain" }}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+            <div style={{ borderLeft: "2px solid #d1d5db", paddingLeft: "14px" }}>
+              <p style={{ fontSize: "11px", color: "#374151", margin: "0 0 2px 0", maxWidth: "270px", lineHeight: "1.3" }}>
+                {data.storeSettings?.address || "Company Bagh Road, Behind Govt. Hospital, Alwar, Rajasthan - 301001"}
+              </p>
+              <p style={{ fontSize: "11.5px", fontWeight: "700", color: "#000000", margin: "0 0 2px 0" }}>
+                Mob: 9462359499
+              </p>
+              <p style={{ fontSize: "11px", color: "#374151", margin: "0 0 2px 0" }}>
+                Email: {data.storeSettings?.email || "iversestore01@gmail.com"}
+              </p>
+              {data.type === "GST" && (
+                <p style={{ fontSize: "11px", fontWeight: "700", color: "#000000", margin: "2px 0 0 0" }}>
+                  GSTIN: {data.storeSettings?.gstin || "08IYBPS5424R2ZH"}
+                </p>
+              )}
+            </div>
           </div>
 
+          {/* Right: Invoice Heading & Meta */}
           <div style={{ textAlign: "right" }}>
-            <p style={{ fontSize: "13px", fontWeight: "700", margin: 0 }}>
+            <h2 style={{ fontSize: "22px", fontWeight: "900", textTransform: "uppercase", letterSpacing: "2.5px", color: "#000000", margin: "0 0 6px 0" }}>
+              {data.type === "GST" ? "TAX INVOICE" : "INVOICE"}
+            </h2>
+            <p style={{ fontSize: "13px", fontWeight: "700", margin: "0 0 3px 0" }}>
               Invoice No: <span style={{ fontFamily: "monospace", fontSize: "13px" }}>{data.invoiceNumber}</span>
             </p>
-            <p style={{ fontSize: "11px", color: "#374151", margin: "3px 0 0 0" }}>Date: {data.invoiceDate}</p>
-            <p style={{ fontSize: "11px", color: "#374151", margin: "2px 0 0 0" }}>Payment: {data.paymentMode.toUpperCase()}</p>
+            <p style={{ fontSize: "11px", color: "#374151", margin: "0 0 2px 0" }}>Date: {data.invoiceDate}</p>
+            <p style={{ fontSize: "11px", color: "#374151", margin: 0 }}>Payment: {data.paymentMode.toUpperCase()}</p>
           </div>
         </div>
 
