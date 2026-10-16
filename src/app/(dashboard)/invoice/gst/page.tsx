@@ -24,11 +24,11 @@ import {
 import { ProductSearchInput } from "@/components/invoice/ProductSearchInput";
 import { InvoicePrintTemplate, InvoiceData } from "@/components/invoice/InvoicePrintTemplate";
 import { generatePdfFromElement } from "@/lib/pdf";
-import { saveInvoice } from "@/app/actions/invoice";
+import { saveInvoice, getNextInvoiceNumber } from "@/app/actions/invoice";
 import { getStoreSettings } from "@/app/actions/settings";
 
 export default function GSTInvoicePage() {
-  const [invoiceNumber, setInvoiceNumber] = useState("INV-GST-1001");
+  const [invoiceNumber, setInvoiceNumber] = useState("TAX-1");
   const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split("T")[0]);
   const [paymentMode, setPaymentMode] = useState("cash");
   const [customerName, setCustomerName] = useState("");
@@ -41,7 +41,7 @@ export default function GSTInvoicePage() {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    setInvoiceNumber(`INV-GST-${Math.floor(1000 + Math.random() * 9000)}`);
+    getNextInvoiceNumber("GST").then(setInvoiceNumber);
     getStoreSettings().then(setStoreSettings);
   }, []);
 
@@ -90,6 +90,7 @@ export default function GSTInvoicePage() {
       if (res.success) {
         await generatePdfFromElement("printable-invoice", `${invoiceNumber}.pdf`);
         alert("Invoice saved successfully & stock updated!");
+        getNextInvoiceNumber("GST").then(setInvoiceNumber);
       } else {
         alert(`Note: ${res.error}`);
         await generatePdfFromElement("printable-invoice", `${invoiceNumber}.pdf`);

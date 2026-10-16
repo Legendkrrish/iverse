@@ -25,8 +25,8 @@ const DEFAULT_SETTINGS: StoreSettingsData = {
   mobiles: "9462359499",
   email: "iversestore01@gmail.com",
   gstin: "08IYBPS5424R2ZH",
-  gstPrefix: "TAX-2026-",
-  nonGstPrefix: "INV-NGST-",
+  gstPrefix: "TAX-",
+  nonGstPrefix: "INV-",
   defaultPaymentMode: "Cash",
   bankName: "HDFC Bank Ltd",
   accountNumber: "50200012345678",
@@ -59,14 +59,30 @@ export async function getStoreSettings(): Promise<StoreSettingsData> {
       }).catch(() => {});
     }
 
+    // Simplify old prefixes to clean series defaults
+    if (settings.gstPrefix === "TAX-2026-") {
+      settings.gstPrefix = "TAX-";
+      prisma.storeSetting.update({
+        where: { id: "default" },
+        data: { gstPrefix: "TAX-" },
+      }).catch(() => {});
+    }
+    if (settings.nonGstPrefix === "INV-NGST-") {
+      settings.nonGstPrefix = "INV-";
+      prisma.storeSetting.update({
+        where: { id: "default" },
+        data: { nonGstPrefix: "INV-" },
+      }).catch(() => {});
+    }
+
     return {
       storeName: settings.storeName,
       address: settings.address,
       mobiles: settings.mobiles || "9462359499",
       email: settings.email,
       gstin: settings.gstin,
-      gstPrefix: settings.gstPrefix,
-      nonGstPrefix: settings.nonGstPrefix,
+      gstPrefix: settings.gstPrefix || "TAX-",
+      nonGstPrefix: settings.nonGstPrefix || "INV-",
       defaultPaymentMode: settings.defaultPaymentMode,
       bankName: settings.bankName,
       accountNumber: settings.accountNumber,

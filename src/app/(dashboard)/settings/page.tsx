@@ -22,8 +22,8 @@ export default function SettingsPage() {
   const [gstin, setGstin] = useState("08IYBPS5424R2ZH");
 
   // Invoice Prefixes
-  const [gstPrefix, setGstPrefix] = useState("TAX-2026-");
-  const [nonGstPrefix, setNonGstPrefix] = useState("INV-NGST-");
+  const [gstPrefix, setGstPrefix] = useState("TAX-");
+  const [nonGstPrefix, setNonGstPrefix] = useState("INV-");
   const [defaultPaymentMode, setDefaultPaymentMode] = useState("Cash");
 
   // Bank Info

@@ -10,11 +10,11 @@ import { Plus, Trash2, Printer, FileDown, Eye, X } from "lucide-react";
 import { ProductSearchInput } from "@/components/invoice/ProductSearchInput";
 import { InvoicePrintTemplate, InvoiceData } from "@/components/invoice/InvoicePrintTemplate";
 import { generatePdfFromElement } from "@/lib/pdf";
-import { saveInvoice } from "@/app/actions/invoice";
+import { saveInvoice, getNextInvoiceNumber } from "@/app/actions/invoice";
 import { getStoreSettings } from "@/app/actions/settings";
 
 export default function ChalanPage() {
-  const [chalanNumber, setChalanNumber] = useState("INV-NGST-1001");
+  const [chalanNumber, setChalanNumber] = useState("INV-1");
   const [chalanDate, setChalanDate] = useState(new Date().toISOString().split("T")[0]);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
@@ -24,7 +24,7 @@ export default function ChalanPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    setChalanNumber(`INV-NGST-${Math.floor(1000 + Math.random() * 9000)}`);
+    getNextInvoiceNumber("NON_GST").then(setChalanNumber);
     getStoreSettings().then(setStoreSettings);
   }, []);
 
@@ -54,6 +54,7 @@ export default function ChalanPage() {
       if (res.success) {
         await generatePdfFromElement("printable-invoice", `${chalanNumber}.pdf`);
         alert("Non-GST Invoice saved successfully & stock updated!");
+        getNextInvoiceNumber("NON_GST").then(setChalanNumber);
       } else {
         alert(`Note: ${res.error}`);
         await generatePdfFromElement("printable-invoice", `${chalanNumber}.pdf`);

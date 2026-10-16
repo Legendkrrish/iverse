@@ -105,3 +105,46 @@ export async function saveInvoice(params: CreateInvoiceParams) {
     return { success: false, error: error.message || "Failed to save invoice" };
   }
 }
+
+export async function getNextInvoiceNumber(type: "GST" | "NON_GST"): Promise<string> {
+  try {
+    const settings = await prisma.storeSetting.findUnique({
+      where: { id: "default" }
+    });
+
+    // Default clean prefixes
+    let prefix = type === "GST" 
+      ? (settings?.gstPrefix !== undefined ? settings.gstPrefix : "TAX-")
+      : (settings?.nonGstPrefix !== undefined ? settings.nonGstPrefix : "INV-");
+
+    if (prefix === "TAX-2026-") prefix = "TAX-";
+    if (prefix === "INV-NGST-") prefix = "INV-";
+
+    // Fetch existing invoices of this type to determine the highest series number
+    const invoices = await prisma.invoice.findMany({
+      where: { type },
+      select: { invoiceNumber: true }
+    });
+
+    let maxNum = 0;
+    for (const inv of invoices) {
+      const numStr = inv.invoiceNumber;
+      if (!numStr) continue;
+      // Match trailing integer digits (e.g. TAX-1 -> 1, INV-5 -> 5)
+      const match = numStr.match(/(\d+)$/);
+      if (match) {
+        const val = parseInt(match[1], 10);
+        if (!isNaN(val) && val > maxNum) {
+          maxNum = val;
+        }
+      }
+    }
+
+    // Always start sequentially from 1 if no invoices exist
+    const nextSeq = maxNum + 1;
+    return `${prefix || ""}${nextSeq}`;
+  } catch (error) {
+    console.error("Failed to get next invoice number:", error);
+    return type === "GST" ? "TAX-1" : "INV-1";
+  }
+}
